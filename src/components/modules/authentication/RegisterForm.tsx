@@ -1,22 +1,64 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import GoogleIcon from "@/assets/icons/GoogleIcon"
-import { Link } from "react-router"
+  FieldError,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import GoogleIcon from "@/assets/icons/GoogleIcon";
+import { Link } from "react-router";
+import * as z from "zod";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import PasswordInputValidator from "@/components/ui/PasswordInputValidator";
+import PasswordInput from "@/components/ui/PasswordInput";
+
+const RegisterFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(3, {
+        error: "Name is too short",
+      })
+      .max(50),
+    email: z.email(),
+    password: z.string().min(8, { error: "Password is too short" }),
+    confirmPassword: z
+      .string()
+      .min(8, { error: "Confirm Password is too short" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password do not match",
+    path: ["confirmPassword"],
+  });
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const form = useForm<z.infer<typeof RegisterFormSchema>>({
+    resolver: zodResolver(RegisterFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof RegisterFormSchema>) => {
+    console.log(data);
+  };
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+    >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
@@ -24,37 +66,89 @@ export function RegisterForm({
             Fill in the form below to create your account
           </p>
         </div>
-        <Field>
-          <FieldLabel htmlFor="name">Full Name</FieldLabel>
-          <Input id="name" type="text" placeholder="John Doe" required />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
-          <FieldDescription>
-            We&apos;ll use this to contact you. We will not share your email
-            with anyone else.
-          </FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input id="password" type="password" required />
-          <FieldDescription>
-            Must be at least 8 characters long.
-          </FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-          <Input id="confirm-password" type="password" required />
-          <FieldDescription>Please confirm your password.</FieldDescription>
-        </Field>
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-rg-name">Full Name</FieldLabel>
+              <Input
+                {...field}
+                id="form-rg-name"
+                type="text"
+                aria-invalid={fieldState.invalid}
+                placeholder="John Doe"
+                required
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="email"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-rg-email">Email</FieldLabel>
+              <Input
+                {...field}
+                id="form-rg-email"
+                type="email"
+                aria-invalid={fieldState.invalid}
+                placeholder="m@example.com"
+                required
+              />
+              <FieldDescription className="sr-only">
+                We&apos;ll use this to contact you. We will not share your email
+                with anyone else.
+              </FieldDescription>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="password"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-rg-password">Password</FieldLabel>
+              {/* <Input
+                {...field}
+                id="form-rg-password"
+                type="password"
+                aria-invalid={fieldState.invalid}
+                placeholder="********"
+                required
+              /> */}
+              <PasswordInputValidator {...field}/>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="confirmPassword"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-rg-confirmPassword">
+                Confirm Password
+              </FieldLabel>
+              <PasswordInput {...field}/>
+              <FieldDescription>Please confirm your password.</FieldDescription>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
         <Field>
           <Button type="submit">Create Account</Button>
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
         <Field>
           <Button variant="outline" type="button">
-            <GoogleIcon/>
+            <GoogleIcon />
             Sign up with Google
           </Button>
           <FieldDescription className="px-6 text-center">
@@ -63,5 +157,5 @@ export function RegisterForm({
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }
