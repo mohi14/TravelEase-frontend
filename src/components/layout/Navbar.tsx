@@ -23,11 +23,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
-        <NavLink
-          to="/"
-          className="text-xl font-bold tracking-tight"
-        >
-          <Logo/>
+        <NavLink to="/" className="text-xl font-bold tracking-tight">
+          <Logo />
         </NavLink>
 
         {/* Desktop Navigation */}
@@ -55,13 +52,12 @@ export default function Navbar() {
         {/* Mobile Menu */}
         <div className="md:hidden">
           <Sheet>
-            <SheetTrigger>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
+            {/* Use asChild to avoid nested <button> elements */}
+            <SheetTrigger render={<Button variant="ghost" size="icon" />}>
+              <Menu className="h-5 w-5" />
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-[280px]">
+            <SheetContent side="right" className="w-70">
               <SheetHeader>
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
@@ -73,9 +69,7 @@ export default function Navbar() {
                     to={item.href}
                     className={({ isActive }) =>
                       `rounded-md px-3 py-2 transition-colors ${
-                        isActive
-                          ? "bg-muted font-semibold"
-                          : "hover:bg-muted"
+                        isActive ? "bg-muted font-semibold" : "hover:bg-muted"
                       }`
                     }
                   >
@@ -83,9 +77,7 @@ export default function Navbar() {
                   </NavLink>
                 ))}
 
-                <Button className="mt-4 w-full">
-                  Download CV
-                </Button>
+                <Button className="mt-4 w-full">Download CV</Button>
               </nav>
             </SheetContent>
           </Sheet>
