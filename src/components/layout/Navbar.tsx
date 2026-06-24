@@ -1,5 +1,5 @@
 import { Menu } from "lucide-react";
-import { NavLink } from "react-router";
+import { Link, NavLink } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import Logo from "@/assets/icons/Logo";
+import { ModeToggle } from "./ModeToggler";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -45,9 +46,13 @@ export default function Navbar() {
         </nav>
 
         {/* Desktop Button */}
-        <div className="hidden md:block">
-          <Button>Login</Button>
+                <div className="flex items-center gap-2">
+          <ModeToggle />
+          <Button  className="text-sm">
+            <Link to="/login">Login</Link>
+          </Button>
         </div>
+
 
         {/* Mobile Menu */}
         <div className="md:hidden">
@@ -83,6 +88,8 @@ export default function Navbar() {
           </Sheet>
         </div>
       </div>
+
+      
     </header>
   );
 }
