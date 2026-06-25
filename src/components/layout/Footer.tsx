@@ -21,7 +21,7 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div>
-            <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center">
                 <Logo/>
                 <h2 className="text-2xl font-bold">TravelEase</h2>
             </div>
