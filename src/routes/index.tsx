@@ -24,4 +24,8 @@ export const router = createBrowserRouter([
     Component: Register,
     path: "/register",
   },
+  {
+    Component: Verify,
+    path: "/verify",
+  },
 ]);
