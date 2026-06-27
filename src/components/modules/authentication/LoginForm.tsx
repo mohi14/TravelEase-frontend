@@ -17,6 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
+import { isFetchBaseQueryError } from "@/lib/error";
 
 const LogInFormSchema = z.object({
   email: z.email(),
@@ -46,18 +47,27 @@ export function LoginForm({
         toast.success("Logged in successfully");
         navigate("/");
       }
-    } catch (err:unknown) {
-      console.error(err);
+    } catch (err: unknown) {
+  if (isFetchBaseQueryError(err)) {
+    const message = (err.data as { message?: string })?.message;
 
-      if (err?.data?.message === "Password does not match") {
+    switch (message) {
+      case "Password does not match":
         toast.error("Invalid credentials");
-      }
+        break;
 
-      if (err?.data?.message === "User is not verified") {
+      case "User is not verified":
         toast.error("Your account is not verified");
         navigate("/verify", { state: data.email });
-      }
+        break;
+
+      default:
+        toast.error("Something went wrong");
     }
+  } else {
+    toast.error("Unexpected error");
+  }
+}
   };
   return (
     <form
