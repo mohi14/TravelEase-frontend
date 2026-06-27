@@ -9,12 +9,14 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import GoogleIcon from "@/assets/icons/GoogleIcon";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import PasswordInput from "@/components/ui/PasswordInput";
+import { useLoginMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
 
 const LogInFormSchema = z.object({
   email: z.email(),
@@ -25,6 +27,9 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const [login] = useLoginMutation();
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof LogInFormSchema>>({
     resolver: zodResolver(LogInFormSchema),
     defaultValues: {
@@ -34,7 +39,25 @@ export function LoginForm({
   });
 
   const onSubmit = async (data: z.infer<typeof LogInFormSchema>) => {
-    console.log(data);
+    try {
+      const res = await login(data).unwrap();
+
+      if (res.success) {
+        toast.success("Logged in successfully");
+        navigate("/");
+      }
+    } catch (err:unknown) {
+      console.error(err);
+
+      if (err?.data?.message === "Password does not match") {
+        toast.error("Invalid credentials");
+      }
+
+      if (err?.data?.message === "User is not verified") {
+        toast.error("Your account is not verified");
+        navigate("/verify", { state: data.email });
+      }
+    }
   };
   return (
     <form
