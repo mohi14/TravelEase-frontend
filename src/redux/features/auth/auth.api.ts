@@ -24,14 +24,35 @@ const authApi = baseApi.injectEndpoints({
         data: userInfo,
       }),
     }),
-     verifyOtp: builder.mutation<IResponse<null>, IVerifyOtp>({
+    verifyOtp: builder.mutation<IResponse<null>, IVerifyOtp>({
       query: (userInfo) => ({
         url: "/otp/verify",
         method: "POST",
         data: userInfo,
       }),
     }),
+    userInfo: builder.query({
+      query: () => ({
+        url: "/user/me",
+        method: "GET",
+      }),
+      providesTags: ["USER"],
+    }),
+    logout: builder.mutation({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+      invalidatesTags: ["USER"],
+    }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useSendOtpMutation,useVerifyOtpMutation } = authApi;
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+  useLogoutMutation,
+  useUserInfoQuery,
+} = authApi;
