@@ -18,6 +18,7 @@ import PasswordInput from "@/components/ui/PasswordInput";
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
 import { isFetchBaseQueryError } from "@/lib/error";
+import config from "@/config";
 
 const LogInFormSchema = z.object({
   email: z.email(),
@@ -131,7 +132,7 @@ export function LoginForm({
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
         <Field>
-          <Button variant="outline" type="button">
+          <Button variant="outline" type="button"  className=" cursor-pointer"   onClick={() => window.open(`${config.baseUrl}/auth/google`)}>
             <GoogleIcon />
             Login with Google
           </Button>
