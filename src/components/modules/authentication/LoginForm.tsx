@@ -49,26 +49,22 @@ export function LoginForm({
         navigate("/");
       }
     } catch (err: unknown) {
-  if (isFetchBaseQueryError(err)) {
-    const message = (err.data as { message?: string })?.message;
+      if (isFetchBaseQueryError(err)) {
+        const message = (err.data as { message?: string })?.message;
 
-    switch (message) {
-      case "Password does not match":
-        toast.error("Invalid credentials");
-        break;
+        switch (message) {
+          case "User is not verified":
+            toast.error("Your account is not verified");
+            navigate("/verify", { state: data.email });
+            break;
 
-      case "User is not verified":
-        toast.error("Your account is not verified");
-        navigate("/verify", { state: data.email });
-        break;
-
-      default:
-        toast.error("Something went wrong");
+          default:
+            toast.error(message);
+        }
+      } else {
+        toast.error("Unexpected error");
+      }
     }
-  } else {
-    toast.error("Unexpected error");
-  }
-}
   };
   return (
     <form
@@ -132,7 +128,12 @@ export function LoginForm({
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
         <Field>
-          <Button variant="outline" type="button"  className=" cursor-pointer"   onClick={() => window.open(`${config.baseUrl}/auth/google`)}>
+          <Button
+            variant="outline"
+            type="button"
+            className=" cursor-pointer"
+            onClick={() => window.open(`${config.baseUrl}/auth/google`)}
+          >
             <GoogleIcon />
             Login with Google
           </Button>
