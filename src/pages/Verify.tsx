@@ -3,16 +3,16 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
+  // CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   Field,
-  FieldDescription,
+  // FieldDescription,
   FieldError,
-  FieldGroup,
-  FieldLabel,
+  // FieldGroup,
+  // FieldLabel,
 } from "@/components/ui/field";
 import {
   InputOTP,
@@ -20,6 +20,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { isFetchBaseQueryError } from "@/lib/error";
 import { useSendOtpMutation, useVerifyOtpMutation } from "@/redux/features/auth/auth.api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
@@ -40,9 +41,9 @@ export default function Verify() {
   const navigate = useNavigate();
   const [email] = useState(location.state);
   const [confirmed, setConfirmed] = useState(false);
-  const [sendOtp] = useSendOtpMutation();
-  const [verifyOtp] = useVerifyOtpMutation();
-  const [timer, setTimer] = useState(5);
+  const [sendOtp,{ isLoading: isSendingOtp }] = useSendOtpMutation();
+  const [verifyOtp, { isLoading: isVerifyingOtp }] = useVerifyOtpMutation();
+  const [timer, setTimer] = useState(120);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -60,11 +61,16 @@ export default function Verify() {
       if (res.success) {
         toast.success("OTP Sent", { id: toastId });
         setConfirmed(true);
-        setTimer(5);
+        setTimer(120);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err: unknown) {
+          if (isFetchBaseQueryError(err)) {
+            const message = (err.data as { message?: string })?.message;
+           toast.error(message,{ id: toastId });
+          } else {
+            toast.error("Unexpected error",{ id: toastId });
+          }
+        }
   };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -79,10 +85,16 @@ export default function Verify() {
       if (res.success) {
         toast.success("OTP Verified", { id: toastId });
         setConfirmed(true);
+        navigate("/login")
       }
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err: unknown) {
+          if (isFetchBaseQueryError(err)) {
+            const message = (err.data as { message?: string })?.message;
+           toast.error(message,{ id: toastId });
+          } else {
+            toast.error("Unexpected error",{ id: toastId });
+          }
+        }
   };
 
   useEffect(() => {
@@ -104,105 +116,112 @@ export default function Verify() {
     return () => clearInterval(timerId);
   }, [email, confirmed]);
   return (
-    <div className="grid place-content-center h-screen">
-      {confirmed ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Verify your email address</CardTitle>
-            <CardDescription>
-              Please enter the 6-digit code we sent to <br /> {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form
-              id="otp-form"
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col gap-6"
-            >
-              <FieldGroup>
-                <Controller
-                  name="pin"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="pin">One-Time Password</FieldLabel>
+    <div className="min-h-screen flex items-center justify-center p-4">
+  <Card className="w-full max-w-md">
+    {!confirmed ? (
+      <>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">
+            Verify your email address
+          </CardTitle>
 
-                      <InputOTP
-                        id="pin"
-                        maxLength={6}
-                        value={field.value}
-                        onChange={field.onChange}
-                        aria-invalid={fieldState.invalid}
-                      >
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                        </InputOTPGroup>
+          <CardDescription>
+            We will send a verification code to
+            <br />
+            <span className="font-medium text-foreground">{email}</span>
+          </CardDescription>
+        </CardHeader>
 
-                        <InputOTPSeparator />
+        <CardContent>
+          <Button onClick={handleSendOtp} className="w-full" disabled={isSendingOtp}>
+            Send OTP
+          </Button>
+        </CardContent>
+      </>
+    ) : (
+      <>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">
+            Verify your email address
+          </CardTitle>
 
-                        <InputOTPGroup>
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
+          <CardDescription>
+            Enter the 6-digit code sent to
+            <br />
+            <span className="font-medium text-foreground">{email}</span>
+          </CardDescription>
+        </CardHeader>
 
-                      <FieldDescription className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="link"
-                          onClick={handleSendOtp}
-                          disabled={timer > 0}
-                          className="h-auto p-0"
-                        >
-                          Resend OTP
-                        </Button>
+        <CardContent>
+          <form
+            id="otp-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
+            <Controller
+              name="pin"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <div className="flex justify-center">
+                    <InputOTP
+                      id="pin"
+                      maxLength={6}
+                      value={field.value}
+                      onChange={field.onChange}
+                      aria-invalid={fieldState.invalid}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                      </InputOTPGroup>
 
-                        {timer > 0 && (
-                          <span className="text-muted-foreground">
-                            ({timer}s)
-                          </span>
-                        )}
-                      </FieldDescription>
+                      <InputOTPSeparator />
 
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+
+                  <div className="mt-4 text-center">
+                    <Button
+                      type="button"
+                      variant="link"
+                      onClick={handleSendOtp}
+                     disabled={timer > 0 || isSendingOtp}
+                      
+                    >
+                      Resend OTP
+                    </Button>
+
+                    {timer > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Resend available in {timer}s
+                      </p>
+                    )}
+                  </div>
+
+                  {fieldState.invalid && (
+                    <div className="mt-2">
+                      <FieldError errors={[fieldState.error]} />
+                    </div>
                   )}
-                />
-
-                <Field>
-                  <Button type="submit" className="w-full">
-                    Verify OTP
-                  </Button>
                 </Field>
-              </FieldGroup>
-            </form>
-          </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button form="otp-form" type="submit">
-              Submit
+              )}
+            />
+
+            <Button type="submit" className="w-full"  disabled={isVerifyingOtp}>
+              Verify OTP
             </Button>
-          </CardFooter>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Verify your email address</CardTitle>
-            <CardDescription>
-              We will send you an OTP at <br /> {email}
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-end">
-            <Button onClick={handleSendOtp} className="w-[300px]">
-              Confirm
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
-    </div>
+          </form>
+        </CardContent>
+      </>
+    )}
+  </Card>
+</div>
   );
 }
