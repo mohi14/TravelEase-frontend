@@ -13,13 +13,14 @@ import Logo from "@/assets/icons/Logo";
 import { NavMain } from "./Sidebar/NavMain";
 import { NavUser } from "./Sidebar/NavUser";
 import { getSidebarItems } from "@/utils/gerSIdebarItems";
-import { role } from "@/constants/role";
-
-const data = {navMain: getSidebarItems("ADMIN")}
-console.log(data);
-
+import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: userData } = useUserInfoQuery(undefined);
+
+
+  const data = { navMain: getSidebarItems(userData?.data?.role) };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -46,7 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        {/* <NavUser user={data.user} /> */}
+        {userData && <NavUser user={userData?.data} />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
