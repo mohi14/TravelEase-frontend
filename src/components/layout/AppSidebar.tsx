@@ -3,7 +3,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -11,16 +10,22 @@ import {
   SidebarRail,
 } from "../ui/sidebar";
 import Logo from "@/assets/icons/Logo";
-import { Building2, CalendarCheck, MapPlus } from "lucide-react";
+import { NavMain } from "./Sidebar/NavMain";
+import { NavUser } from "./Sidebar/NavUser";
+import { getSidebarItems } from "@/utils/gerSIdebarItems";
+import { role } from "@/constants/role";
+
+const data = {navMain: getSidebarItems("ADMIN")}
+console.log(data);
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader >
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
@@ -38,10 +43,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup />
-        <SidebarGroup />
+        <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter>
+        {/* <NavUser user={data.user} /> */}
+      </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
