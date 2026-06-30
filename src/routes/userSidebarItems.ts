@@ -1,4 +1,4 @@
-import About from "@/pages/About";
+import Bookings from "@/pages/User/Bookings";
 import type { ISidebarItem } from "@/types";
 
 export const userSidebarItems: ISidebarItem[] = [
@@ -8,7 +8,7 @@ export const userSidebarItems: ISidebarItem[] = [
       {
         title: "Bookings",
         url: "/user/bookings",
-        component: About,
+        component:  Bookings,
       },
     ],
   },
