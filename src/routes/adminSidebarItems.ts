@@ -1,12 +1,12 @@
 import type { ISidebarItem } from "@/types";
-import { lazy } from "react";
-import {
-  BarChart3,
-  Route,
-  Layers
-} from "lucide-react";
+// import { lazy } from "react";
+import { BarChart3, Route, Layers } from "lucide-react";
+import Analytics from "@/pages/Admin/Analytics";
+import AddTourType from "@/pages/Admin/AddTourType";
+import AddTour from "@/pages/Admin/AddTour";
+import AddDivision from "@/pages/Admin/AddDivision";
 
-const Analytics = lazy(() => import("@/pages/About"));
+// const Analytics = lazy(() => import("@/pages/About"));
 
 export const adminSidebarItems: ISidebarItem[] = [
   {
@@ -25,14 +25,14 @@ export const adminSidebarItems: ISidebarItem[] = [
     icon: Route,
     items: [
       {
-        title: "Add Tour Type",
-        url: "/admin/add-tour-type",
-        component: Analytics,
+        title: "Tour Type",
+        url: "/admin/tour-type",
+        component: AddTourType,
       },
       {
-        title: "Add Tour",
-        url: "/admin/add-tour",
-        component: Analytics,
+        title: "Tour",
+        url: "/admin/tour",
+        component: AddTour,
       },
       {
         title: "Habi Jabi",
@@ -46,14 +46,9 @@ export const adminSidebarItems: ISidebarItem[] = [
     icon: Layers,
     items: [
       {
-        title: "Add Tour Type",
-        url: "/admin/add-tour-type",
-        component: Analytics,
-      },
-      {
-        title: "Add Tour",
-        url: "/admin/add-tour",
-        component: Analytics,
+        title: "Division",
+        url: "/admin/division",
+        component: AddDivision,
       },
       {
         title: "Habi Jabi",
