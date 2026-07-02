@@ -6,6 +6,8 @@ import { Trash2 } from "lucide-react"
 
 export default function AddTourType() {
   const {data}=useGetTourTypesQuery(undefined)
+  console.log(data,"kk");
+  
   return (
     <div className="w-full max-w-7xl mx-auto px-5">
       <div className="flex justify-between my-8">
@@ -21,7 +23,7 @@ export default function AddTourType() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.data?.map((item: { name: string }) => (
+            {data?.map((item: { name: string }) => (
               <TableRow>
                 <TableCell className="font-medium w-full">
                   {item?.name}
