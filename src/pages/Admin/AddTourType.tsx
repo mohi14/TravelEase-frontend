@@ -1,12 +1,45 @@
 import AddTourTypeModal from "@/components/modules/admin/TourType/AddTourTypeModal"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useGetTourTypesQuery } from "@/redux/features/tour/tour.api"
+import {
+  useDeleteTourTypeMutation,
+  useGetTourTypesQuery,
+} from "@/redux/features/tour/tour.api"
+import { isFetchBaseQueryError } from "@/lib/error"
 import { Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function AddTourType() {
-  const {data}=useGetTourTypesQuery(undefined)
-  console.log(data,"kk");
+  const { data } = useGetTourTypesQuery(undefined)
+  const [deleteTourType, { isLoading }] = useDeleteTourTypeMutation()
+
+  const handleDelete = async (tourType: { _id?: string; id?: string; name: string }) => {
+    const tourTypeId = tourType._id ?? tourType.id ?? tourType.name
+
+    const shouldDelete = window.confirm(
+      `Delete tour type "${tourType.name}"?`
+    )
+
+    if (!shouldDelete) {
+      return
+    }
+
+    try {
+      const res = await deleteTourType(tourTypeId).unwrap()
+
+      if (res?.success) {
+        toast.success("Tour Type deleted")
+      }
+    } catch (err: unknown) {
+      if (isFetchBaseQueryError(err)) {
+        const message = (err.data as { message?: string })?.message
+
+        toast.error(message ?? "Unexpected error")
+      } else {
+        toast.error("Unexpected error")
+      }
+    }
+  }
   
   return (
     <div className="w-full max-w-7xl mx-auto px-5">
@@ -18,18 +51,23 @@ export default function AddTourType() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Name</TableHead>
+              <TableHead className="w-25">Name</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.map((item: { name: string }) => (
-              <TableRow>
+            {data?.map((item: { _id?: string; id?: string; name: string }) => (
+              <TableRow key={item._id ?? item.id ?? item.name}>
                 <TableCell className="font-medium w-full">
                   {item?.name}
                 </TableCell>
                 <TableCell>
-                  <Button size="sm">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDelete(item)}
+                    disabled={isLoading}
+                  >
                     <Trash2 />
                   </Button>
                 </TableCell>

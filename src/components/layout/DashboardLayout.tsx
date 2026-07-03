@@ -2,7 +2,6 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "../ui/sidebar";
 
 import { Outlet } from "react-router";
 import { AppSidebar } from "./AppSidebar";
-import { Separator } from "../ui/separator";
 
 export default function DashboardLayout() {
   return (
