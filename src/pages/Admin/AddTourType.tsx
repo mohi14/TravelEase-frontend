@@ -1,34 +1,55 @@
 import AddTourTypeModal from "@/components/modules/admin/TourType/AddTourTypeModal"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   useDeleteTourTypeMutation,
   useGetTourTypesQuery,
 } from "@/redux/features/tour/tour.api"
 import { isFetchBaseQueryError } from "@/lib/error"
+import { useState } from "react"
 import { Trash2 } from "lucide-react"
 import { toast } from "sonner"
+
+type TourTypeItem = { _id?: string; id?: string; name: string }
 
 export default function AddTourType() {
   const { data } = useGetTourTypesQuery(undefined)
   const [deleteTourType, { isLoading }] = useDeleteTourTypeMutation()
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedTourType, setSelectedTourType] = useState<TourTypeItem | null>(null)
 
-  const handleDelete = async (tourType: { _id?: string; id?: string; name: string }) => {
-    const tourTypeId = tourType._id ?? tourType.id ?? tourType.name
+  const openDeleteDialog = (tourType: TourTypeItem) => {
+    setSelectedTourType(tourType)
+    setIsDeleteDialogOpen(true)
+  }
 
-    const shouldDelete = window.confirm(
-      `Delete tour type "${tourType.name}"?`
-    )
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false)
+    setSelectedTourType(null)
+  }
 
-    if (!shouldDelete) {
+  const handleDelete = async () => {
+    if (!selectedTourType) {
       return
     }
+
+    const tourTypeId = selectedTourType._id ?? selectedTourType.id ?? selectedTourType.name
 
     try {
       const res = await deleteTourType(tourTypeId).unwrap()
 
       if (res?.success) {
         toast.success("Tour Type deleted")
+        closeDeleteDialog()
       }
     } catch (err: unknown) {
       if (isFetchBaseQueryError(err)) {
@@ -56,7 +77,7 @@ export default function AddTourType() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.map((item: { _id?: string; id?: string; name: string }) => (
+            {data?.map((item: TourTypeItem) => (
               <TableRow key={item._id ?? item.id ?? item.name}>
                 <TableCell className="font-medium w-full">
                   {item?.name}
@@ -65,7 +86,7 @@ export default function AddTourType() {
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleDelete(item)}
+                    onClick={() => openDeleteDialog(item)}
                     disabled={isLoading}
                   >
                     <Trash2 />
@@ -76,6 +97,37 @@ export default function AddTourType() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            closeDeleteDialog()
+          } else {
+            setIsDeleteDialogOpen(true)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Tour Type</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedTourType?.name ? `"${selectedTourType.name}"` : "this tour type"}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" onClick={closeDeleteDialog}>Cancel</Button>} />
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isLoading || !selectedTourType}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
