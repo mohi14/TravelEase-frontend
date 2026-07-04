@@ -26,7 +26,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    Component: withAuth(DashboardLayout, role.superAdmin as TRole),
+    Component: withAuth(DashboardLayout, [role.superAdmin] as TRole[]),
     path: "/admin",
     children: [
       { index: true, element: <Navigate to={"/admin/analytics"} /> },
@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    Component: withAuth(DashboardLayout, role.user as TRole),
+    Component: withAuth(DashboardLayout, [role.user, role.superAdmin] as TRole[]),
     path: "/user",
     children: [
       { index: true, element: <Navigate to={"/user/bookings"} /> },
