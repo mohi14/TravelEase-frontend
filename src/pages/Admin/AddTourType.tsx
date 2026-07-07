@@ -1,67 +1,48 @@
-import AddTourTypeModal from "@/components/modules/admin/TourType/AddTourTypeModal"
-import { Button } from "@/components/ui/button"
+import AddTourTypeModal from "@/components/modules/admin/TourType/AddTourTypeModal";
+import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   useDeleteTourTypeMutation,
   useGetTourTypesQuery,
-} from "@/redux/features/tour/tour.api"
-import { isFetchBaseQueryError } from "@/lib/error"
-import { useState } from "react"
-import { Trash2 } from "lucide-react"
-import { toast } from "sonner"
+} from "@/redux/features/tour/tour.api";
+import { isFetchBaseQueryError } from "@/lib/error";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { DeleteConfirmation } from "@/components/DeleteConfirmation";
 
-type TourTypeItem = { _id?: string; id?: string; name: string }
+type TourTypeItem = { _id?: string; id?: string; name: string };
 
 export default function AddTourType() {
-  const { data } = useGetTourTypesQuery(undefined)
-  const [deleteTourType, { isLoading }] = useDeleteTourTypeMutation()
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [selectedTourType, setSelectedTourType] = useState<TourTypeItem | null>(null)
+  const { data } = useGetTourTypesQuery(undefined);
+  const [deleteTourType, { isLoading }] = useDeleteTourTypeMutation();
 
-  const openDeleteDialog = (tourType: TourTypeItem) => {
-    setSelectedTourType(tourType)
-    setIsDeleteDialogOpen(true)
-  }
-
-  const closeDeleteDialog = () => {
-    setIsDeleteDialogOpen(false)
-    setSelectedTourType(null)
-  }
-
-  const handleDelete = async () => {
-    if (!selectedTourType) {
-      return
-    }
-
-    const tourTypeId = selectedTourType._id ?? selectedTourType.id ?? selectedTourType.name
+  const handleRemoveTourType = async (tourTypeId: string | undefined) => {
+    const toastId = toast.loading("Removing...");
 
     try {
-      const res = await deleteTourType(tourTypeId).unwrap()
+      const res = await deleteTourType(tourTypeId).unwrap();
 
       if (res?.success) {
-        toast.success("Tour Type deleted")
-        closeDeleteDialog()
+        toast.success("Tour Type deleted", { id: toastId });
       }
     } catch (err: unknown) {
       if (isFetchBaseQueryError(err)) {
-        const message = (err.data as { message?: string })?.message
+        const message = (err.data as { message?: string })?.message;
 
-        toast.error(message ?? "Unexpected error")
+        toast.error(message ?? "Unexpected error", { id: toastId });
       } else {
-        toast.error("Unexpected error")
+        toast.error("Unexpected error", { id: toastId });
       }
     }
-  }
-  
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-5">
       <div className="flex justify-between my-8">
@@ -83,51 +64,23 @@ export default function AddTourType() {
                   {item?.name}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => openDeleteDialog(item)}
-                    disabled={isLoading}
+                  <DeleteConfirmation
+                    onConfirm={() => handleRemoveTourType(item._id)}
                   >
-                    <Trash2 />
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={isLoading}
+                    >
+                      <Trash2 />
+                    </Button>
+                  </DeleteConfirmation>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-
-      <Dialog
-        open={isDeleteDialogOpen}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) {
-            closeDeleteDialog()
-          } else {
-            setIsDeleteDialogOpen(true)
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Tour Type</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete {selectedTourType?.name ? `"${selectedTourType.name}"` : "this tour type"}? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline" onClick={closeDeleteDialog}>Cancel</Button>} />
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isLoading || !selectedTourType}
-            >
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
-  )
+  );
 }
